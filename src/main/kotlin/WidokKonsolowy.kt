@@ -1,7 +1,10 @@
 import RezultatStrzalu.*
 import SilnikStatki.Companion.listaRozmiarowStatkow
 
-class WidokKonsolowy(private val silnik: SilnikGry) : WidokGry {
+class WidokKonsolowy(
+    private val silnik: SilnikGry,
+    private val uzywajKolorow: Boolean,
+) : WidokGry {
     override fun wyswietlPowitanie() {
         println("Witaj w grze w Statki!")
         println("Rozmieść swoje statki na planszy.")
@@ -64,7 +67,7 @@ class WidokKonsolowy(private val silnik: SilnikGry) : WidokGry {
 
     override fun czyscEkran(czekajUzytkownika: Boolean) {
         if (czekajUzytkownika) {
-            println("Naciśnij Enter, aby wyczyścić ekran...")
+            println("Naciśnij Enter, aby przejść dalej...")
             readlnOrNull()
         }
         repeat(100) {
@@ -102,12 +105,11 @@ class WidokKonsolowy(private val silnik: SilnikGry) : WidokGry {
 
     private fun kolorujZnak(znak: Char?): String {
         return when (znak) {
-            'X' -> "\u001B[31mX\u001B[0m"
-            'S' -> "\u001B[34mS\u001B[0m"
+            'X' -> if (uzywajKolorow) "\u001B[31mX\u001B[0m" else "X"
+            'S' -> if (uzywajKolorow) "\u001B[34mS\u001B[0m" else "S"
             else -> (znak ?: '.').toString()
         }
     }
-
 
     private fun getDlugoscStatku(numerStatku: Int): Int = listaRozmiarowStatkow[numerStatku - 1]
 
