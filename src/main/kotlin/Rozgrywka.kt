@@ -1,26 +1,29 @@
 import RezultatStrzalu.PUDLO
+import SilnikStatki.Companion.listaRozmiarowStatkow
+import StanGry.*
 
 class Rozgrywka(private val silnik: SilnikGry, private val widok: WidokGry) {
 
-    fun przeprowadzRozgrywke() {
+    init {
+        widok.wyswietlPowitanie()
         przygotujStatkiGracza()
         widok.wyswietlRozpoczecieGry()
-
-        while (true) {
-            widok.czyscEkran(true)
-            widok.wyswietlDwiePlansze(silnik.pobierzPlanszePrzeciwnika(), silnik.pobierzWlasnaPlansze())
-
-            if (!ruchGracza()) break
-            if (czyGraZakonczona()) break
-
-            widok.czyscEkran(true)
-            widok.wyswietlDwiePlansze(silnik.pobierzPlanszePrzeciwnika(), silnik.pobierzWlasnaPlansze())
-
-            if (!ruchKomputera()) break
-            if (czyGraZakonczona()) break
-        }
+        petlaGry()
     }
 
+    private fun petlaGry() {
+        while (true) {
+            widok.czyscEkran(true)
+            wyswietlDwiePlansze()
+
+            if (!ruchGracza() || czyGraZakonczona()) break
+
+            widok.czyscEkran(true)
+            wyswietlDwiePlansze()
+
+            if (!ruchKomputera() || czyGraZakonczona()) break
+        }
+    }
 
     private fun ruchGracza(): Boolean {
         while (true) {
@@ -44,20 +47,18 @@ class Rozgrywka(private val silnik: SilnikGry, private val widok: WidokGry) {
         return true
     }
 
-    private fun czyGraZakonczona(): Boolean {
-        if (silnik.czyKoniecGry()) {
+    private fun czyGraZakonczona(): Boolean = when (val stanGry = silnik.czyKoniecGry()) {
+        W_TOKU -> false
+        WYGRANA_GRACZA, WYGRANA_KOMPUTERA -> {
             widok.czyscEkran()
-            widok.wyswietlDwiePlansze(silnik.pobierzPlanszePrzeciwnika(), silnik.pobierzWlasnaPlansze())
-            widok.wyswietlKomunikatKoncaGry()
-            return true
+            wyswietlDwiePlansze()
+            widok.wyswietlKomunikatKoncaGry(stanGry)
+            true
         }
-        return false
     }
 
     private fun przygotujStatkiGracza() {
-        widok.wyswietlPowitanie()
-        val czyAuto = widok.pobierzCzyAutomatycznieRozmiescicStatki()
-        if (czyAuto) {
+        if (widok.czyAutomatycznieRozmiescicStatki()) {
             silnik.automatycznieRozmiescStatkiGracza()
             widok.czyscEkran()
             widok.wyswietlPlansze(silnik.pobierzWlasnaPlansze())
@@ -67,15 +68,22 @@ class Rozgrywka(private val silnik: SilnikGry, private val widok: WidokGry) {
     }
 
     private fun rozmiescStatkiRecznie() {
-        val konfiguracjaStatkow = listOf(4, 3, 3, 2, 2, 2, 1, 1, 1, 1)
         val dostepnePola = ('A'..'J').flatMap { kol -> (1..10).map { wiersz -> "$kol$wiersz" } }
 
-        konfiguracjaStatkow.forEachIndexed { index, dlugosc ->
+        listaRozmiarowStatkow.forEachIndexed { index, dlugosc ->
             val statek = Statek(dlugosc)
             while (true) {
-                val dane = widok.pobierzDaneStatku(index + 1, dostepnePola) ?: continue
+                val dane = widok.pobierzDaneStatku(
+                    numerStatku = index + 1,
+                    dostepnePola = dostepnePola,
+                ) ?: continue
                 val (pozycja, orientacja) = dane
-                if (silnik.rozmiescStatekGracza(statek, pozycja, orientacja)) {
+                if (silnik.rozmiescStatekGracza(
+                        statek = statek,
+                        pozycjaStartowa = pozycja,
+                        orientacja = orientacja,
+                    )
+                ) {
                     widok.czyscEkran()
                     widok.wyswietlPlansze(silnik.pobierzWlasnaPlansze())
                     break
@@ -84,5 +92,13 @@ class Rozgrywka(private val silnik: SilnikGry, private val widok: WidokGry) {
                 }
             }
         }
+    }
+
+    private fun wyswietlDwiePlansze() {
+        widok.wyswietlDwiePlansze(
+            planszaPrzeciwnika = silnik.pobierzPlanszePrzeciwnika(),
+            planszaGracza = silnik.pobierzWlasnaPlansze(),
+            rozmiar = silnik.rozmiarPlanszy,
+        )
     }
 }

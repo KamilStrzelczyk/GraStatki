@@ -1,67 +1,66 @@
+import RezultatStrzalu.TRAFIONY
+import RezultatStrzalu.ZATOPIONY
+
 class StrategiaStrzelania {
     private val trafionePola = mutableListOf<Pair<Int, Int>>()
     private var ostatniTrafiony: Pair<Int, Int>? = null
     private var kierunek: Pair<Int, Int>? = null
     private val strzalyWykonane = mutableSetOf<String>()
 
-    fun strzal(silnik: SilnikGry): String {
+    fun strzal(silnik: SilnikGry): String = ostatniTrafiony?.let { trafiony ->
         val rozmiar = silnik.rozmiarPlanszy
-
-        if (ostatniTrafiony != null) {
-            if (kierunek != null) {
-                var (wiersz, kolumna) = ostatniTrafiony!!
-                wiersz += kierunek!!.first
-                kolumna += kierunek!!.second
-                val pozycja = kolumnaWierszNaPozycje(kolumna, wiersz)
-
-                if (czyPoleWPlanszy(wiersz, kolumna, rozmiar) &&
-                    pozycja !in strzalyWykonane
-                ) {
-                    strzalyWykonane.add(pozycja)
-                    return pozycja
-                } else {
-                    kierunek = Pair(-kierunek!!.first, -kierunek!!.second)
-                    val (wiersz2, kolumna2) = ostatniTrafiony!!
-                    val nowyWiersz = wiersz2 + kierunek!!.first
-                    val nowyKolumna = kolumna2 + kierunek!!.second
-                    val pozycja2 = kolumnaWierszNaPozycje(nowyKolumna, nowyWiersz)
-
-                    if (czyPoleWPlanszy(nowyWiersz, nowyKolumna, rozmiar) &&
-                        pozycja2 !in strzalyWykonane
-                    ) {
-                        strzalyWykonane.add(pozycja2)
-                        return pozycja2
-                    } else {
-                        return wybierzLosowyStrzal(silnik)
-                    }
-                }
-            } else {
-                val (wiersz, kolumna) = ostatniTrafiony!!
-                val sasiedniePola = listOf(
-                    Pair(wiersz - 1, kolumna),
-                    Pair(wiersz + 1, kolumna),
-                    Pair(wiersz, kolumna - 1),
-                    Pair(wiersz, kolumna + 1)
-                ).filter { (r, c) -> czyPoleWPlanszy(r, c, rozmiar) }
-
-                for ((r, c) in sasiedniePola) {
-                    val pozycja = kolumnaWierszNaPozycje(c, r)
-                    if (pozycja !in strzalyWykonane) {
-                        strzalyWykonane.add(pozycja)
-                        return pozycja
-                    }
-                }
-                return wybierzLosowyStrzal(silnik)
-            }
+        if (kierunek != null) {
+            probujStrzelWKierunku(trafiony, kierunek!!, rozmiar) ?: probujStrzelWKierunku(
+                trafiony,
+                Pair(-kierunek!!.first, -kierunek!!.second),
+                rozmiar
+            )
         } else {
-            return wybierzLosowyStrzal(silnik)
+            wybierzSasiedniStrzal(trafiony, rozmiar)
+        }
+    } ?: wybierzLosowyStrzal(silnik)
+
+    private fun wybierzSasiedniStrzal(ostatnioTrafiony: Pair<Int, Int>, rozmiar: Int): String? {
+        val (wiersz, kolumna) = ostatnioTrafiony
+        val sasiedniePola = listOf(
+            Pair(wiersz - 1, kolumna),
+            Pair(wiersz + 1, kolumna),
+            Pair(wiersz, kolumna - 1),
+            Pair(wiersz, kolumna + 1)
+        ).filter { (r, c) -> czyPoleWPlanszy(r, c, rozmiar) }
+
+        for ((r, c) in sasiedniePola) {
+            val pozycja = kolumnaWierszNaPozycje(c, r)
+            if (pozycja !in strzalyWykonane) {
+                strzalyWykonane.add(pozycja)
+                return pozycja
+            }
+        }
+        return null
+    }
+
+    private fun probujStrzelWKierunku(
+        ostatnioTrafiony: Pair<Int, Int>,
+        kierunek: Pair<Int, Int>,
+        rozmiar: Int
+    ): String? {
+        var (wiersz, kolumna) = ostatnioTrafiony
+        wiersz += kierunek.first
+        kolumna += kierunek.second
+        val pozycja = kolumnaWierszNaPozycje(kolumna, wiersz)
+
+        return if (czyPoleWPlanszy(wiersz, kolumna, rozmiar) && pozycja !in strzalyWykonane) {
+            strzalyWykonane.add(pozycja)
+            pozycja
+        } else {
+            null
         }
     }
 
     fun zaktualizujPoStrzale(pozycja: String, rezultat: RezultatStrzalu) {
         val (kolumna, wiersz) = pozycjaNaKolumnaWiersz(pozycja)
         when (rezultat) {
-            RezultatStrzalu.TRAFIONY -> {
+            TRAFIONY -> {
                 trafionePola.add(Pair(wiersz, kolumna))
                 if (ostatniTrafiony == null) {
                     ostatniTrafiony = Pair(wiersz, kolumna)
@@ -74,7 +73,7 @@ class StrategiaStrzelania {
                 }
             }
 
-            RezultatStrzalu.ZATOPIONY -> {
+            ZATOPIONY -> {
                 trafionePola.clear()
                 ostatniTrafiony = null
                 kierunek = null
@@ -84,13 +83,6 @@ class StrategiaStrzelania {
                 // brak reakcji na pudło/poza planszą
             }
         }
-    }
-
-    fun resetuj() {
-        trafionePola.clear()
-        ostatniTrafiony = null
-        kierunek = null
-        strzalyWykonane.clear()
     }
 
     private fun wybierzLosowyStrzal(silnik: SilnikGry): String {

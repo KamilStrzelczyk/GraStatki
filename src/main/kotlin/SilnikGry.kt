@@ -1,15 +1,14 @@
-interface SilnikGry {
-    val rozmiarPlanszy: Int
-    fun rozpocznijNowaGre()
-    fun oddajStrzal(pozycja: String): RezultatStrzalu
-    fun oddajStrzalKomputera(): Pair<String, RezultatStrzalu>
-    fun pobierzPlanszePrzeciwnika(): List<List<Char?>>
-    fun pobierzWlasnaPlansze(): List<List<Char>>
-    fun czyKoniecGry(): Boolean
-    fun rozmiescStatekGracza(statek: Statek, pozycjaStartowa: String, orientacja: Orientacja): Boolean
-    val statkiGracza: List<Statek>
-    val statkiKomputera: List<Statek>
-    var liczbaZatopionychStatkowGracza: Int
-    var liczbaZatopionychStatkowKomputera: Int
-    fun automatycznieRozmiescStatkiGracza()
+abstract class SilnikGry {
+    abstract val rozmiarPlanszy: Int
+    abstract fun oddajStrzal(pozycja: String): RezultatStrzalu
+    abstract fun oddajStrzalKomputera(): Pair<String, RezultatStrzalu>
+    abstract fun pobierzPlanszePrzeciwnika(): List<List<Char?>>
+    abstract fun pobierzWlasnaPlansze(): List<List<Char>>
+    abstract fun czyKoniecGry(): StanGry
+    abstract fun rozmiescStatekGracza(statek: Statek, pozycjaStartowa: String, orientacja: Orientacja): Boolean
+    abstract val statkiGracza: List<Statek>
+    abstract val statkiKomputera: List<Statek>
+    abstract var liczbaZatopionychStatkowGracza: Int
+    abstract var liczbaZatopionychStatkowKomputera: Int
+    abstract fun automatycznieRozmiescStatkiGracza()
 }

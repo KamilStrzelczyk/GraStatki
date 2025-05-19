@@ -1,9 +1,6 @@
 fun main() {
     val silnik = SilnikStatki()
-    val widok = WidokKonsolowy(
-        silnik = silnik,
-        uzywajKolorow = false,
-    )
+    val widok = WidokKonsolowy(false)
 
-    Rozgrywka(silnik, widok).przeprowadzRozgrywke()
+    Rozgrywka(silnik, widok)
 }

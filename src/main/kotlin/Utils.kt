@@ -9,3 +9,9 @@ enum class Orientacja {
     POZIOMA,
     PIONOWA
 }
+
+enum class StanGry {
+    WYGRANA_GRACZA,
+    WYGRANA_KOMPUTERA,
+    W_TOKU
+}

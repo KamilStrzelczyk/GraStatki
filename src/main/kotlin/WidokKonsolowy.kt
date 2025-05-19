@@ -1,10 +1,13 @@
 import RezultatStrzalu.*
+import SilnikStatki.Companion.ZNAK_PUSTEGO_POLA
+import SilnikStatki.Companion.ZNAK_STATKU
+import SilnikStatki.Companion.ZNAK_ZATOPIONEGO_STATKU
 import SilnikStatki.Companion.listaRozmiarowStatkow
+import StanGry.*
 
 class WidokKonsolowy(
-    private val silnik: SilnikGry,
     private val uzywajKolorow: Boolean,
-) : WidokGry {
+) : WidokGry() {
     override fun wyswietlPowitanie() {
         println("Witaj w grze w Statki!")
         println("Rozmieść swoje statki na planszy.")
@@ -20,8 +23,16 @@ class WidokKonsolowy(
         println(plansza)
     }
 
-    override fun wyswietlDwiePlansze(planszaPrzeciwnika: List<List<Char?>>, planszaGracza: List<List<Char>>) {
-        wyswietlPlanszePoziomo(planszaPrzeciwnika, planszaGracza)
+    override fun wyswietlDwiePlansze(
+        planszaPrzeciwnika: List<List<Char?>>,
+        planszaGracza: List<List<Char>>,
+        rozmiar: Int
+    ) {
+        wyswietlPlanszePoziomo(
+            plansza1 = planszaPrzeciwnika,
+            plansza2 = planszaGracza,
+            rozmiar = rozmiar,
+        )
     }
 
     override fun pobierzRuchGracza(): String {
@@ -38,11 +49,13 @@ class WidokKonsolowy(
         }
     }
 
-    override fun wyswietlKomunikatKoncaGry() {
-        if (silnik.liczbaZatopionychStatkowKomputera == silnik.statkiKomputera.size) {
-            println("Gratulacje! Zatopiles wszystkie statki przeciwnika!")
-        } else {
-            println("Przegrałeś! Wszystkie Twoje statki zostały zatopione.")
+    override fun wyswietlKomunikatKoncaGry(stanGry: StanGry) {
+        when (stanGry) {
+            WYGRANA_GRACZA -> println("Gratulacje! Zatopiles wszystkie statki przeciwnika!")
+            WYGRANA_KOMPUTERA -> println("Przegrałeś! Wszystkie Twoje statki zostały zatopione.")
+            W_TOKU -> {
+                // Nie wyświetlaj nic, gdy gra jest w toku
+            }
         }
     }
 
@@ -89,9 +102,7 @@ class WidokKonsolowy(
         }
     }
 
-
-    private fun wyswietlPlanszePoziomo(plansza1: List<List<Char?>>, plansza2: List<List<Char>>) {
-        val rozmiar = silnik.rozmiarPlanszy
+    private fun wyswietlPlanszePoziomo(plansza1: List<List<Char?>>, plansza2: List<List<Char>>, rozmiar: Int) {
         val naglowek = "   " + ('A'..'J').joinToString("  ")
         println("Plansza przeciwnika:                   Twoja plansza:")
         println("$naglowek        $naglowek")
@@ -105,20 +116,19 @@ class WidokKonsolowy(
 
     private fun kolorujZnak(znak: Char?): String {
         return when (znak) {
-            'X' -> if (uzywajKolorow) "\u001B[31mX\u001B[0m" else "X"
-            'S' -> if (uzywajKolorow) "\u001B[34mS\u001B[0m" else "S"
-            else -> (znak ?: '.').toString()
+            ZNAK_ZATOPIONEGO_STATKU -> if (uzywajKolorow) "\u001B[31mX\u001B[0m" else "X"
+            ZNAK_STATKU -> if (uzywajKolorow) "\u001B[34mS\u001B[0m" else "S"
+            else -> (znak ?: ZNAK_PUSTEGO_POLA).toString()
         }
     }
 
     private fun getDlugoscStatku(numerStatku: Int): Int = listaRozmiarowStatkow[numerStatku - 1]
 
-
     override fun wyswietlRuchKomputera(pozycja: String) {
         println("Ruch komputera: $pozycja")
     }
 
-    override fun pobierzCzyAutomatycznieRozmiescicStatki(): Boolean {
+    override fun czyAutomatycznieRozmiescicStatki(): Boolean {
         print("Czy chcesz automatycznie rozmieścić swoje statki? (T/N): ")
         val odpowiedz = readlnOrNull()?.uppercase() ?: "N"
         return odpowiedz == "T"

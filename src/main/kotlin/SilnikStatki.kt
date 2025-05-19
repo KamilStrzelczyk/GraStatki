@@ -1,31 +1,36 @@
-class SilnikStatki : SilnikGry {
+import Orientacja.PIONOWA
+import Orientacja.POZIOMA
+import RezultatStrzalu.POZA_PLANSZA
+import StanGry.*
+
+class SilnikStatki : SilnikGry() {
     private var obecnaStrategia: StrategiaStrzelania = StrategiaStrzelania()
     override val rozmiarPlanszy = 10
-    private val planszaGracza = MutableList(rozmiarPlanszy) { MutableList(rozmiarPlanszy) { '.' } }
-    private val planszaKomputera = MutableList(rozmiarPlanszy) { MutableList(rozmiarPlanszy) { '.' } }
+    private val planszaGracza = MutableList(rozmiarPlanszy) {
+        MutableList(rozmiarPlanszy) {
+            ZNAK_PUSTEGO_POLA
+        }
+    }
+    private val planszaKomputera = MutableList(rozmiarPlanszy) {
+        MutableList(rozmiarPlanszy) {
+            ZNAK_PUSTEGO_POLA
+        }
+    }
     override val statkiGracza = mutableListOf<Statek>()
     override val statkiKomputera = mutableListOf<Statek>()
     override var liczbaZatopionychStatkowGracza = 0
     override var liczbaZatopionychStatkowKomputera = 0
 
-
     init {
         rozmiescWieleStatkow(listaRozmiarowStatkow, planszaKomputera, statkiKomputera)
     }
 
-    override fun rozpocznijNowaGre() {
-        planszaGracza.forEach { it.replaceAll { '.' } }
-        planszaKomputera.forEach { it.replaceAll { '.' } }
-        statkiGracza.clear()
-        statkiKomputera.clear()
-        liczbaZatopionychStatkowGracza = 0
-        liczbaZatopionychStatkowKomputera = 0
-        rozmiescWieleStatkow(listaRozmiarowStatkow, planszaKomputera, statkiKomputera)
-        obecnaStrategia.resetuj()
-    }
-
     override fun automatycznieRozmiescStatkiGracza() {
-        planszaGracza.forEach { it.replaceAll { '.' } }
+        planszaGracza.forEach {
+            it.replaceAll {
+                ZNAK_PUSTEGO_POLA
+            }
+        }
         statkiGracza.clear()
         liczbaZatopionychStatkowGracza = 0
         rozmiescWieleStatkow(listaRozmiarowStatkow, planszaGracza, statkiGracza)
@@ -45,16 +50,16 @@ class SilnikStatki : SilnikGry {
         listaStatkow: MutableList<Statek>
     ) {
         while (true) {
-            val orientacja = if (Math.random() < 0.5) Orientacja.POZIOMA else Orientacja.PIONOWA
+            val orientacja = if (Math.random() < 0.5) POZIOMA else PIONOWA
             val wiersz = (0 until rozmiarPlanszy).random()
             val kolumna = (0 until rozmiarPlanszy).random()
 
             if (czyMoznaUmiescic(statek, wiersz, kolumna, orientacja, plansza)) {
                 statek.pola.clear()
                 repeat(statek.dlugosc) { i ->
-                    val r = wiersz + if (orientacja == Orientacja.PIONOWA) i else 0
-                    val c = kolumna + if (orientacja == Orientacja.POZIOMA) i else 0
-                    plansza[r][c] = 'S'
+                    val r = wiersz + if (orientacja == PIONOWA) i else 0
+                    val c = kolumna + if (orientacja == POZIOMA) i else 0
+                    plansza[r][c] = ZNAK_STATKU
                     statek.pola.add(r to c)
                 }
                 listaStatkow.add(statek)
@@ -71,11 +76,11 @@ class SilnikStatki : SilnikGry {
         plansza: List<List<Char>>
     ): Boolean {
         return (0 until statek.dlugosc).all { i ->
-            val r = wiersz + if (orientacja == Orientacja.PIONOWA) i else 0
-            val c = kolumna + if (orientacja == Orientacja.POZIOMA) i else 0
+            val r = wiersz + if (orientacja == PIONOWA) i else 0
+            val c = kolumna + if (orientacja == POZIOMA) i else 0
             r in 0 until rozmiarPlanszy &&
-                    c in 0 until rozmiarPlanszy &&
-                    plansza[r][c] == '.'
+                c in 0 until rozmiarPlanszy &&
+                plansza[r][c] == ZNAK_PUSTEGO_POLA
         }
     }
 
@@ -89,9 +94,9 @@ class SilnikStatki : SilnikGry {
 
         statek.pola.clear()
         repeat(statek.dlugosc) { i ->
-            val r = row + if (orientacja == Orientacja.PIONOWA) i else 0
-            val c = col + if (orientacja == Orientacja.POZIOMA) i else 0
-            planszaGracza[r][c] = 'S'
+            val r = row + if (orientacja == PIONOWA) i else 0
+            val c = col + if (orientacja == POZIOMA) i else 0
+            planszaGracza[r][c] = ZNAK_STATKU
             statek.pola.add(r to c)
         }
         statkiGracza.add(statek)
@@ -99,8 +104,13 @@ class SilnikStatki : SilnikGry {
     }
 
     override fun oddajStrzal(pozycja: String): RezultatStrzalu {
-        val (row, col) = parsePozycja(pozycja) ?: return RezultatStrzalu.POZA_PLANSZA
-        return wykonajStrzalNaPlanszy(row, col, planszaKomputera, statkiKomputera) {
+        val (row, col) = parsePozycja(pozycja) ?: return POZA_PLANSZA
+        return wykonajStrzalNaPlanszy(
+            row = row,
+            col = col,
+            plansza = planszaKomputera,
+            statki = statkiKomputera,
+        ) {
             liczbaZatopionychStatkowKomputera++
         }
     }
@@ -116,7 +126,6 @@ class SilnikStatki : SilnikGry {
         obecnaStrategia.zaktualizujPoStrzale(strzal, rezultat)
         return strzal to rezultat
     }
-
 
     private fun parsePozycja(pozycja: String): Pair<Int, Int>? {
         if (pozycja.length < 2) return null
@@ -134,8 +143,8 @@ class SilnikStatki : SilnikGry {
         onZatopiony: () -> Unit
     ): RezultatStrzalu {
         return when (plansza[row][col]) {
-            'S' -> {
-                plansza[row][col] = 'X'
+            ZNAK_STATKU -> {
+                plansza[row][col] = ZNAK_ZATOPIONEGO_STATKU
                 val trafiony = statki.find { statek -> statek.pola.contains(row to col) }
                 trafiony?.let {
                     it.trafienia.add(row to col)
@@ -146,8 +155,9 @@ class SilnikStatki : SilnikGry {
                 } ?: RezultatStrzalu.TRAFIONY
             }
 
-            '.' -> {
-                plansza[row][col] = 'O'
+            ZNAK_PUSTEGO_POLA
+            -> {
+                plansza[row][col] = ZNAK_PUDLA
                 RezultatStrzalu.PUDLO
             }
 
@@ -157,7 +167,7 @@ class SilnikStatki : SilnikGry {
 
     override fun pobierzPlanszePrzeciwnika(): List<List<Char?>> {
         return planszaKomputera.map { wiersz ->
-            wiersz.map { if (it == 'S') null else it }
+            wiersz.map { if (it == ZNAK_STATKU) null else it }
         }
     }
 
@@ -165,12 +175,17 @@ class SilnikStatki : SilnikGry {
         return planszaGracza.map { it.toList() }
     }
 
-    override fun czyKoniecGry(): Boolean {
-        return liczbaZatopionychStatkowKomputera == statkiKomputera.size ||
-                liczbaZatopionychStatkowGracza == statkiGracza.size
+    override fun czyKoniecGry(): StanGry = when {
+        liczbaZatopionychStatkowKomputera == statkiKomputera.size -> WYGRANA_GRACZA
+        liczbaZatopionychStatkowGracza == statkiGracza.size -> WYGRANA_KOMPUTERA
+        else -> W_TOKU
     }
 
     companion object {
         val listaRozmiarowStatkow = listOf(4, 3, 3, 2, 2, 2, 1, 1, 1, 1)
+        const val ZNAK_STATKU = 'S'
+        const val ZNAK_ZATOPIONEGO_STATKU = 'X'
+        const val ZNAK_PUDLA = 'O'
+        const val ZNAK_PUSTEGO_POLA = '.'
     }
 }

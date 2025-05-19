@@ -28,11 +28,11 @@ kotlin {
     jvmToolchain(17)
 }
 
-// Konfiguracja Detekta
+
 tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
-    config.setFrom("$rootDir/detekt.yml") // Możesz dostosować konfigurację
+    config.setFrom("$rootDir/detekt.yml")
     buildUponDefaultConfig = true
-    autoCorrect = true // ✅ włączenie autoformatowania
+    autoCorrect = true
     reports {
         html.required.set(true)
         txt.required.set(false)
