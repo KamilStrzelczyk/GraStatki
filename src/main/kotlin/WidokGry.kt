@@ -2,11 +2,6 @@ abstract class WidokGry {
     abstract fun wyswietlPowitanie()
     abstract fun wyswietlRozpoczecieGry()
     abstract fun wyswietlPlansze(plansza: String)
-    abstract fun wyswietlDwiePlansze(
-        planszaPrzeciwnika: List<List<Char?>>,
-        planszaGracza: List<List<Char>>,
-        rozmiar: Int
-    )
     abstract fun pobierzRuchGracza(): String
     abstract fun wyswietlRezultatStrzalu(rezultat: RezultatStrzalu)
     abstract fun wyswietlKomunikatKoncaGry(stanGry: StanGry)
@@ -16,4 +11,9 @@ abstract class WidokGry {
     abstract fun wyswietlPlansze(plansza: List<List<Char?>>)
     abstract fun wyswietlRuchKomputera(pozycja: String)
     abstract fun czyAutomatycznieRozmiescicStatki(): Boolean
+    abstract fun wyswietlDwiePlansze(
+        planszaPrzeciwnika: List<List<Char?>>,
+        planszaGracza: List<List<Char>>,
+        rozmiar: Int
+    )
 }

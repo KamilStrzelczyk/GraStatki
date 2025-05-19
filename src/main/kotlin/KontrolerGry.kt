@@ -2,7 +2,7 @@ import RezultatStrzalu.PUDLO
 import SilnikStatki.Companion.listaRozmiarowStatkow
 import StanGry.*
 
-class Rozgrywka(private val silnik: SilnikGry, private val widok: WidokGry) {
+class KontrolerGry(private val silnik: SilnikGry, private val widok: WidokGry) {
 
     init {
         widok.wyswietlPowitanie()
