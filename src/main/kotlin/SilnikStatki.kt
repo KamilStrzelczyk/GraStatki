@@ -79,8 +79,8 @@ class SilnikStatki : SilnikGry() {
             val r = wiersz + if (orientacja == PIONOWA) i else 0
             val c = kolumna + if (orientacja == POZIOMA) i else 0
             r in 0 until rozmiarPlanszy &&
-                c in 0 until rozmiarPlanszy &&
-                plansza[r][c] == ZNAK_PUSTEGO_POLA
+                    c in 0 until rozmiarPlanszy &&
+                    plansza[r][c] == ZNAK_PUSTEGO_POLA
         }
     }
 
@@ -156,7 +156,7 @@ class SilnikStatki : SilnikGry() {
             }
 
             ZNAK_PUSTEGO_POLA
-            -> {
+                -> {
                 plansza[row][col] = ZNAK_PUDLA
                 RezultatStrzalu.PUDLO
             }
